@@ -1,17 +1,35 @@
 [
   {
     "id": 1,
-    "tittle": "Producto de prueba",
-    "precio": 100
+    "title": "Campera cuero",
+    "descripcion": "Campera cuero verano - mujer",
+    "code": "ADC123",
+    "price": 200,
+    "status": "true",
+    "stock": 50,
+    "category": "Verano",
+    "thumbnails": []
   },
   {
     "id": 2,
-    "tittle": "Producto agregado ",
-    "precio": 200
+    "title": "Campera abrigo",
+    "descripcion": "Campera invierno - mujer",
+    "code": "GHT443",
+    "price": 500,
+    "status": "true",
+    "stock": 30,
+    "category": "invierno",
+    "thumbnails": []
   },
   {
-    "id": 4,
-    "tittle": "Producto editado",
-    "price": 150
+    "id": 3,
+    "title": "Campera Jean",
+    "descripcion": "Campera verano - mujer",
+    "code": "HTTY90",
+    "price": 150,
+    "status": "true",
+    "stock": 28,
+    "category": "Verano",
+    "thumbnails": []
   }
 ]
