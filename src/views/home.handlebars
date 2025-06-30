@@ -1,0 +1,15 @@
+<div>
+    <h1>Home</h1>
+    <h2>Lista de productos</h2>
+    <ul>
+        {{#each products}}
+        <li>{{this.title}} - {{this.descripcion}} - {{this.price}}</li>
+        {{/each}}
+    </ul>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    //webSockets desde el cliente
+    const socket = io();
+</script>
