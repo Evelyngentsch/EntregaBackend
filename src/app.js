@@ -7,19 +7,25 @@ import viewsRouter from "./routes/views.router.js";
 import productsRouter from "./routes/products.router.js";
 import cartRouter from "./routes/cart.router.js"
 import { Server } from "socket.io";
+import connectMongoDB from "./config/db.js";
+import dotenv from "dotenv";
 
 
-const app = express();
-app.use(express.json());
+dotenv.config(); //inicializamos las variables de entorno
+const app = express(); 
+app.use(express.json());  // configuramos para aceptar datos en formato json
 const server = http.createServer(app);
 const io = new Server(server);
-const PORT = 8080;
+const PORT = process.env.PORT;
 
-const productManager = new ProductManager("./src/products.json");
-const cartManager = new CartManager();
+
+connectMongoDB();
+
+const productManager = new ProductManager("./src/products.json"); //borrar?
+const cartManager = new CartManager(); //borrar?
 
 app.use(express.static("public")); // habilitamos la carpeta public con archivos estaticos
-//app.use(express.urlencoded({ extended: true }));
+
 
 
 //configuracion handlebars 
@@ -58,130 +64,6 @@ io.on("connection", (socket)=>{
     }
     })
 })
-
-
-
-// RUTAS DE PRODUCTO
-/*
-app.get("/api/products", async(req,res)=>{
-
-    try {
-        const products = await productManager.getProducts();
-
-        res.status(200).json({status: "success", products});
-    } catch (error) {
-
-        res.status(500).json({status: "error"});
-        
-    }
-});
-
-
-app.post("/api/products", async(req, res)=>{
-    try {
-        const newProduct = req.body;
-        const product = await productManager.addProduct(newProduct);
-        res.status(201).json({status: "success", product});
-
-    } catch (error) {
-        res.status(500).json({status: "error"});
-    }
-});
-
-
-app.delete("/api/products/:pid", async (req, res)=> {
-
-    try {
-        const productId = req.params.pid;
-        const products = await productManager.deleteProductById(productId);
-        res.status(200).json({status: "success", products});
-    } catch (error) {
-        
-        res.status(500).json({status : "error"});
-    }
-});
-
-
-app.put("/api/products/:pid", async(req, res) =>{
-
-    try {
-        const productId = req.params.pid;
-        const updateData = req.body;
-
-        const products = await productManager.updateProductById(productId, updateData);
-        res.status(200).json({status : "success", products});
-
-    } catch (error) {
-        res.status(500).json({status: "error"});
-    }
-});
-
-
-app.get("/api/products/:pid", async(req, res)=>{
-
-    try {
-        const productId = req.params.pid;
-        const product = await productManager.getProductById(productId);
-        res.status(200).json({status: "success", product});
-
-    } catch (error) {
-         res.status(500).json({status: "error"});
-    }
-});
-
-*/
-
-// RUTAS DEL CARRITO: 
-
-/*
-app.post("/api/carts", async(req, res) =>{
-
-    try {
-       const carts =  await cartManager.addCart();
-       res.status(201).json({carts, message: "Nuevo carrito creado"});
-
-    } catch (error) {
-        res.status(500).json({status: "error"});
-    }
-
-});
-
-app.get("/api/carts/:cid", async(req, res)=>{
-
-    try {
-
-        const cid = req.params.cid;
-        const products = await cartManager.getProductsInCartById(cid);
-        res.status(200).json({products, message: "Lista de productos"});
-        
-    } catch (error) {  
-        res.status(500).json({status: "error"});
-    }
-
-
-});
-
-app.post("/api/carts/:cid/product/:pid", async(req, res) =>{
-
-    try {
-
-        const cid = req.params.cid;
-        const pid = req.params.pid;  // puedo parsear x las dudas xq los params llegan como strings x mas que sean numeros parseInt()
-      //  const {cid, pid} = req.params; puedo desestructurar el objeto
-
-       const quantity = parseInt(req.body.quantity); // tengo que capturar la cantidad del producto que llevo
-
-       const carts =  await cartManager.addProductInCart(cid, pid, quantity);
-       res.status(200).json({carts, message: "Nuevo producto agregado"});
-       //200 xq no estamos creando un recurso, estamos modificando
-
-
-      
-    } catch (error) {
-         res.status(500).json({status: "error"});    
-    }
-});
-*/
 
 
 

@@ -1,14 +1,11 @@
 import express from "express";
-import CartManager  from "../CartManager.js";
+import CartManager  from "../CartManager.js"; //borrar?
+import Cart from "../models/cart.model.js"
+
 
 const cartRouter = express.Router();
-const cartManager = new CartManager();
+const cartManager = new CartManager();  //borrar?
 
-/*
-cartRouter.get("/", (req, res) =>{
-    res.status(201).json({status : "success"});
-});
-*/
 
 
 cartRouter.post("/", async(req, res) =>{

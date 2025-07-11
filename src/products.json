@@ -58,5 +58,16 @@
     "price": "45",
     "stock": "120",
     "category": "invierno"
+  },
+  {
+    "id": 7,
+    "title": "Campera Jean",
+    "descripcion": "Campera verano - mujer",
+    "code": "HTTY90",
+    "price": 150,
+    "status": "true",
+    "stock": 28,
+    "category": "Verano",
+    "thumbnails": []
   }
 ]
