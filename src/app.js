@@ -9,6 +9,9 @@ import cartRouter from "./routes/cart.router.js"
 import { Server } from "socket.io";
 import connectMongoDB from "./config/db.js";
 import dotenv from "dotenv";
+import __dirname from "../dirname.js";
+import path from "path";
+
 
 
 dotenv.config(); //inicializamos las variables de entorno
@@ -24,14 +27,14 @@ connectMongoDB();
 const productManager = new ProductManager("./src/products.json"); //borrar?
 const cartManager = new CartManager(); //borrar?
 
-app.use(express.static("public")); // habilitamos la carpeta public con archivos estaticos
+app.use(express.static(path.join(__dirname, "public"))); // habilitamos la carpeta public con archivos estaticos
 
 
 
 //configuracion handlebars 
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
-app.set("views", "./src/views");
+app.set("views", __dirname + "/src/views");
 
 //endpoints
 app.use("/", viewsRouter); // todas mis vistas se generan desde la raiz de mi servidor /, le paso el manejador de rutas
