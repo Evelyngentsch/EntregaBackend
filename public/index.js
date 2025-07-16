@@ -1,62 +1,50 @@
-const socket = io(); // conectamos websocket del lado del cliente
+
+const socket = io(); // Conecta al servidor de Socket.IO
 
 const formNewProduct = document.getElementById("formNewProduct");
+const productGrid = document.querySelector(".product-grid"); // Selecciona el contenedor de productos
 
-formNewProduct.addEventListener("submit", (event)=>{
+// Escuchar el evento de formulario para agregar un nuevo producto
+formNewProduct.addEventListener("submit", (e) => {
+  e.preventDefault(); // Evitar que el formulario se envíe de forma tradicional
 
-    event.preventDefault(); // evitar que se recargue la pagina y perder todos los datos
+  const formData = new FormData(formNewProduct);
+  const productData = {};
+  formData.forEach((value, key) => {
+    productData[key] = key === 'price' || key === 'stock' ? Number(value) : value; // Convertir a número si es precio o stock
+  });
 
-    const formData = new FormData(formNewProduct); // clase q viene x defecto en node, que extrae datos de un formulario
-    const productData = {}; // lo convertimos a objeto
-
-    formData.forEach((value, key)=>{
-
-        productData[key] = value; // crear la propiedad con el nombre correcto y el valor correcto
-
-    });
-
-    //enviamos el obj al servidor para gaurdar en el json
-    socket.emit("newProduct", productData);
+  socket.emit("newProduct", productData); // Enviar los datos del nuevo producto al servidor
+  formNewProduct.reset(); // Limpiar el formulario
 });
 
-
-socket.on("productAdded", (newProduct)=>{
-
-    const productList = document.getElementById("productList");
-    productList.innerHTML += `<li> ${newProduct.title} -${newProduct.descripcion}- ${newProduct.price}
-     <button class="btnDelete" data-id="${newProduct.id}">Eliminar</button>
-      </li>`;
-});
-
-/*
-function setupDeleteButtons() {
-    const deleteButtons = document.querySelectorAll(".btnDelete");
-
-    deleteButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            const productId = button.getAttribute("data-id");
-            socket.emit("deleteProduct", productId);
-        });
-    });
+// Función global para eliminar producto (llamada desde el botón)
+function deleteProduct(productId) {
+  socket.emit("deleteProduct", productId); // Enviar el ID del producto a eliminar
 }
-*/
 
-const productList = document.getElementById("productList");
+// Escuchar el evento 'productsUpdated' del servidor
+socket.on("productsUpdated", (products) => {
+  productGrid.innerHTML = ""; // Limpiar el contenedor actual de productos
 
-productList.addEventListener("click", (event) => {
-    if (event.target.classList.contains("btnDelete")) {
-        const productId = event.target.getAttribute("data-id");
-        socket.emit("deleteProduct", productId);
-        
-    }
+  // Re-renderizar todos los productos recibidos del servidor
+  products.forEach((product) => {
+    const productCard = document.createElement("div");
+    productCard.classList.add("product-card");
+    productCard.innerHTML = `
+            <h2 class="product-title">${product.title}</h2>
+            <h3 class="product-price">Precio: ${product.price}</h3>
+            <button class="btn btn-danger" onclick="deleteProduct('${product._id}')">Eliminar</button>
+        `;
+    productGrid.appendChild(productCard);
+  });
 });
 
-socket.on("productDeleted", (deletedProductId) => {
-    const button = document.querySelector(`button[data-id="${deletedProductId}"]`);
-    if (button) {
-        button.parentElement.remove(); 
-    }
+// Escuchar si hay errores al añadir/eliminar productos
+socket.on("productError", (data) => {
+    alert(data.message);
 });
 
 
-setupDeleteButtons();
+// Solicitar productos iniciales al cargar la página
+socket.emit("initialProductsRequest");

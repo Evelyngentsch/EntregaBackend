@@ -1,6 +1,4 @@
 import express from "express";
-import ProductManager from "./ProductManager.js";
-import CartManager from "./CartManager.js";
 import { engine } from "express-handlebars";
 import http from "http";
 import viewsRouter from "./routes/views.router.js";
@@ -11,6 +9,8 @@ import connectMongoDB from "./config/db.js";
 import dotenv from "dotenv";
 import __dirname from "../dirname.js";
 import path from "path";
+import Product from "./models/product.model.js";
+
 
 
 
@@ -24,8 +24,6 @@ const PORT = process.env.PORT;
 
 connectMongoDB();
 
-const productManager = new ProductManager("./src/products.json"); //borrar?
-const cartManager = new CartManager(); //borrar?
 
 app.use(express.static(path.join(__dirname, "public"))); // habilitamos la carpeta public con archivos estaticos
 
@@ -43,30 +41,62 @@ app.use("/api/carts", cartRouter);
 
 
 // configuracion websockets desde el servidor
-io.on("connection", (socket)=>{
-    console.log("Nuevo cliente conectado");
 
-    socket.on("newProduct", async(productData)=>{
+io.on("connection", (socket) => {
+  console.log("Nuevo cliente conectado");
 
-        try {
-         const newProduct = await productManager.addProduct(productData);
-
-         io.emit("productAdded", newProduct); // emitimos el producto recien agregado
-
-        } catch (error) {
-            console.error("Error al añadir el producto");
-        }
-    })
-
-    socket.on("deleteProduct", async (productId) => {
+// traigo todos los productos desde la bdd
+  socket.on("initialProductsRequest", async () => {
     try {
-        await productManager.deleteProductById(productId);
-        io.emit("productDeleted", productId); // notificar a todos los clientes
+      const products = await Product.find().lean(); 
+      socket.emit("productsUpdated", products);
     } catch (error) {
-        console.error("Error al eliminar producto:", error);
+      console.error("Error al obtener productos iniciales:", error);
     }
-    })
-})
+  });
+
+  socket.on("newProduct", async (productData) => {
+    try {
+         const newProduct = await Product.create({
+        title: productData.title,
+        description: productData.descripcion, 
+        code: productData.code,
+        price: productData.price,
+        stock: productData.stock,
+        category: productData.category,
+        // thumbnail y status se manejan por defecto 
+      });
+
+      // Obtener todos los productos actualizados para enviar a todos los clientes
+      const updatedProducts = await Product.find().lean();
+      io.emit("productsUpdated", updatedProducts); // Emitimos la lista completa de productos
+      console.log("Producto añadido:", newProduct.title);
+    } catch (error) {
+      console.error("Error al añadir el producto:", error);
+      socket.emit("productError", { message: "Error al añadir el producto" });
+    }
+  });
+
+  socket.on("deleteProduct", async (productId) => {
+    try {
+      const result = await Product.findByIdAndDelete(productId);
+      if (result) {
+        // Obtener todos los productos actualizados para enviar a todos los clientes
+        const updatedProducts = await Product.find().lean();
+        io.emit("productsUpdated", updatedProducts); // Notificar a todos los clientes
+        console.log("Producto eliminado:", productId);
+      } else {
+        console.warn("Producto no encontrado para eliminar:", productId);
+        socket.emit("productError", {
+          message: "Producto no encontrado para eliminar",
+        });
+      }
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+      socket.emit("productError", { message: "Error al eliminar el producto" });
+    }
+  });
+});
 
 
 
